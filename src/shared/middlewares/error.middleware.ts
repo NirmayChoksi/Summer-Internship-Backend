@@ -17,12 +17,30 @@ export function errorMiddleware(
   }
 
   if ((err as any).code === 11000) {
-    res.status(409).json({ success: false, error: "Duplicate field value" });
+    res.status(409).json({ success: false, error: "Duplicate fieldD value" });
     return;
   }
 
   if (err.name === "ValidationError") {
     res.status(400).json({ success: false, error: err.message });
+    return;
+  }
+
+  if (err.name === "JsonWebTokenError") {
+    res.status(401).json({
+      success: false,
+      error: "Invalid token",
+    });
+
+    return;
+  }
+
+  if (err.name === "TokenExpiredError") {
+    res.status(401).json({
+      success: false,
+      error: "Token expired",
+    });
+
     return;
   }
 
