@@ -7,8 +7,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { AuthRouter } from "./modules/auth/auth.routes.js";
-import { BrandProfileRouter } from "./modules/brand/profile/brandProfile.routes.js";
-import { InfluencerProfileRouter } from "./modules/influencer/profile/influencerProfile.routes.js";
+import { BrandRouter } from "./modules/brand/brand.routes.js";
+import { InfluencerRouter } from "./modules/influencer/influencer.routes.js";
 import { UploadRouter } from "./modules/upload/upload.routes.js";
 import { authMiddleware } from "./shared/middlewares/auth.middleware.js";
 import { errorMiddleware } from "./shared/middlewares/error.middleware.js";
@@ -49,7 +49,9 @@ app.use(authMiddleware);
 
 app.use("/upload", UploadRouter);
 
-app.use("/brand/profile", BrandProfileRouter);
+app.use("/brand", BrandRouter);
+
+app.use("/influencer", InfluencerRouter);
 
 app.use("/influencer/profile", InfluencerProfileRouter);
 

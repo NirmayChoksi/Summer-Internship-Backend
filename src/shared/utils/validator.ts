@@ -1,18 +1,30 @@
-import { ObjectId } from "mongodb";
+import mongoose from "mongoose";
 import { z } from "zod";
 
-export const objectIdSchema = z.string().refine((id) => ObjectId.isValid(id), {
-  message: "Invalid ObjectId",
-});
+export const objectIdSchema = z
+  .string()
+  .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+    message: "Invalid ObjectId",
+  });
 
-export const userIdParamSchema = z.object({
-  userId: objectIdSchema,
-});
+export const createIdParamSchema = <T extends string>(key: T) => {
+  return z.object({
+    [key]: objectIdSchema,
+  } as Record<T, typeof objectIdSchema>);
+};
 
-export type UserIdParams = z.infer<typeof userIdParamSchema>;
+export const userIdParamSchema = createIdParamSchema("userId");
 
-export const profileIdParamSchema = z.object({
-  profileId: objectIdSchema,
-});
+export type UserIdParam = z.infer<typeof userIdParamSchema>;
 
-export type ProfileIdParams = z.infer<typeof profileIdParamSchema>;
+export const brandIdParamSchema = createIdParamSchema("brandId");
+
+export type BrandIdParam = z.infer<typeof brandIdParamSchema>;
+
+export const influencerIdParamSchema = createIdParamSchema("influencerId");
+
+export type InfluencerIdParam = z.infer<typeof influencerIdParamSchema>;
+
+export const campaignIdParamSchema = createIdParamSchema("campaignId");
+
+export type CampaignIdParam = z.infer<typeof campaignIdParamSchema>;

@@ -1,15 +1,10 @@
-import { Response, NextFunction } from "express";
+import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
-import { AuthenticatedRequest } from "../types/index.js";
-import { UnauthorizedError } from "../utils/appError.js";
 import { env } from "../../config/env.js";
 import { UserRole } from "../../modules/user/user.model.js";
+import { UnauthorizedError } from "../utils/appError.js";
 
-export function authMiddleware(
-  req: AuthenticatedRequest,
-  _res: Response,
-  next: NextFunction,
-): void {
+export const authMiddleware: RequestHandler = (req, _res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
@@ -24,9 +19,11 @@ export function authMiddleware(
       email: string;
       role: UserRole;
     };
+
     req.user = payload;
+
     next();
   } catch {
     next(new UnauthorizedError("Invalid or expired token"));
   }
-}
+};

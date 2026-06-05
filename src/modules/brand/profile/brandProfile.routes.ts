@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { validate } from "../../../shared/middlewares/validate.middleware.js";
-import {
-  profileIdParamSchema,
-  userIdParamSchema,
-} from "../../../shared/utils/validator.js";
+import { brandIdParamSchema } from "../../../shared/utils/validator.js";
 import { BrandProfileController } from "./brandProfile.controller.js";
 import {
   createBrandProfileDto,
@@ -13,28 +10,21 @@ import {
 export const BrandProfileRouter = Router();
 
 BrandProfileRouter.post(
-  "/:userId",
-  validate({ params: userIdParamSchema, body: createBrandProfileDto }),
+  "/",
+  validate({ body: createBrandProfileDto }),
   BrandProfileController.create,
 );
 
+BrandProfileRouter.get("/user", BrandProfileController.getByUserId);
+
 BrandProfileRouter.get(
-  "/:profileId",
-  validate({ params: profileIdParamSchema }),
+  "/:brandId",
+  validate({ params: brandIdParamSchema }),
   BrandProfileController.getById,
 );
 
-BrandProfileRouter.get(
-  "/user/:userId",
-  validate({ params: userIdParamSchema }),
-  BrandProfileController.getByUserId,
-);
-
 BrandProfileRouter.patch(
-  "/:profileId",
-  validate({
-    params: profileIdParamSchema,
-    body: updateBrandProfileDto,
-  }),
+  "/:brandId",
+  validate({ params: brandIdParamSchema, body: updateBrandProfileDto }),
   BrandProfileController.update,
 );

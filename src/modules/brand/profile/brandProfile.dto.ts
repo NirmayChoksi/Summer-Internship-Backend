@@ -5,8 +5,10 @@ const baseBrandProfileSchema = z.object({
   companyLogo: z.string(),
   companyName: z.string().min(2),
   description: z.string().min(20),
-  website: z.string().url(),
-  industry: z.enum(Industry),
+  website: z.url(),
+  industry: z
+    .array(z.enum(Industry))
+    .min(1, "At least one industry is required"),
   budget: z
     .object({
       min: z.number().min(0),

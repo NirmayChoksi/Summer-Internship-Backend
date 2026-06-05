@@ -10,12 +10,11 @@ import {
   UpdateInfluencerProfileDto,
 } from "./influencerProfile.dto.js";
 import { InfluencerProfileRepository } from "./influencerProfile.repository.js";
-import { PlatformStats } from "./influencerProfile.model.js";
+import { removeUndefinedFields } from "../../../shared/utils/removeUndefinedFields.js";
 
 export class InfluencerProfileService {
-  private userRepo = new UserRepository();
-
   private influencerProfileRepo = new InfluencerProfileRepository();
+  private userRepo = new UserRepository();
 
   createInfluencerProfile = async (
     userId: string,
@@ -24,9 +23,6 @@ export class InfluencerProfileService {
     const user = await this.userRepo.findById(userId);
 
     if (!user) throw new NotFoundError("User not found");
-
-    if (user.role !== UserRole.Influencer)
-      throw new ConflictError("User is not an influencer");
 
     if (user.isProfileComplete)
       throw new ConflictError("Profile already completed");
@@ -58,9 +54,7 @@ export class InfluencerProfileService {
   };
 
   getInfluencerProfileById = async (profileId: string) => {
-    const profile = await this.influencerProfileRepo.findById(profileId);
-
-    if (!profile) throw new NotFoundError("Influencer profile not found");
+    const profile = await this._getInfluencerProfile(profileId);
 
     return {
       message: "Influencer profile fetched successfully",
@@ -85,15 +79,9 @@ export class InfluencerProfileService {
     profileId: string,
     data: UpdateInfluencerProfileDto,
   ) => {
-    const existingProfile =
-      await this.influencerProfileRepo.findById(profileId);
-
-    if (!existingProfile)
-      throw new NotFoundError("Influencer profile not found");
-
-    const updateData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined),
-    );
+    const existingProfile = await this._getInfluencerProfile(profileId);
+    
+    const updateData = removeUndefinedFields(data);
 
     const updatedProfile = await this.influencerProfileRepo.update(profileId, {
       $set: updateData,
@@ -103,5 +91,13 @@ export class InfluencerProfileService {
       message: "Influencer profile updated successfully",
       profile: updatedProfile,
     };
+  };
+
+  private _getInfluencerProfile = async (profileId: string) => {
+    const profile = await this.influencerProfileRepo.findById(profileId);
+
+    if (!profile) throw new NotFoundError("Influencer profile not found");
+
+    return profile;
   };
 }

@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 import { env } from "../../../config/env.js";
+import { MODELS } from "../../../shared/types/constants.js";
 
 export enum Industry {
   Technology = "TECHNOLOGY",
@@ -19,7 +20,7 @@ export interface IBrandProfile extends Document {
   companyName: string;
   description: string;
   website: string;
-  industry: Industry;
+  industry: Industry[];
   budget: Budget;
   firstName: string;
   lastName: string;
@@ -47,7 +48,7 @@ const brandProfileSchema = new Schema<IBrandProfile>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: MODELS.user,
       required: true,
       unique: true,
       index: true,
@@ -78,7 +79,7 @@ const brandProfileSchema = new Schema<IBrandProfile>(
     },
 
     industry: {
-      type: String,
+      type: [String],
       enum: Object.values(Industry),
       required: true,
     },
@@ -132,6 +133,6 @@ const brandProfileSchema = new Schema<IBrandProfile>(
 );
 
 export const BrandProfile = mongoose.model<IBrandProfile>(
-  "BrandProfile",
+  MODELS.brandProfile,
   brandProfileSchema,
 );

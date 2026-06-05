@@ -4,26 +4,24 @@ import {
   NotFoundError,
 } from "../../../shared/utils/appError.js";
 import { deleteFile } from "../../../shared/utils/fileHelper.js";
-import { IUser, UserRole } from "../../user/user.model.js";
+import { removeUndefinedFields } from "../../../shared/utils/removeUndefinedFields.js";
+import { IUser } from "../../user/user.model.js";
 import { UserRepository } from "../../user/user.repository.js";
 import {
   CreateBrandProfileDto,
   UpdateBrandProfileDto,
 } from "./brandProfile.dto.js";
+import { IBrandProfile } from "./brandProfile.model.js";
 import { BrandProfileRepository } from "./brandProfile.repository.js";
 
 export class BrandProfileService {
-  private userRepo = new UserRepository();
-
   private brandProfileRepo = new BrandProfileRepository();
+  private userRepo = new UserRepository();
 
   createBrandProfile = async (userId: string, data: CreateBrandProfileDto) => {
     const user = await this.userRepo.findById(userId);
 
     if (!user) throw new NotFoundError("User not found");
-
-    if (user.role !== UserRole.Brand)
-      throw new ConflictError("User is not a brand");
 
     if (user.isProfileComplete)
       throw new ConflictError("Profile already completed");
@@ -52,9 +50,7 @@ export class BrandProfileService {
   };
 
   getBrandProfileById = async (profileId: string) => {
-    const profile = await this.brandProfileRepo.findById(profileId);
-
-    if (!profile) throw new NotFoundError("Brand profile not found");
+    const profile = await this._getBrandProfile(profileId);
 
     return {
       message: "Brand profile fetched successfully",
@@ -79,24 +75,30 @@ export class BrandProfileService {
     profileId: string,
     data: UpdateBrandProfileDto,
   ) => {
-    const existingProfile = await this.brandProfileRepo.findById(profileId);
-
-    if (!existingProfile) throw new NotFoundError("Brand profile not found");
+    const existingProfile = await this._getBrandProfile(profileId);
 
     if (data.companyLogo && data.companyLogo !== existingProfile.companyLogo)
       await deleteFile(existingProfile.companyLogo);
 
-    const updateData = Object.fromEntries(
-      Object.entries(data).filter(([_, value]) => value !== undefined),
-    );
+    const updateData = removeUndefinedFields(data);
 
-    const updatedProfile = await this.brandProfileRepo.update(profileId, {
+    const query: UpdateQuery<IBrandProfile> = {
       $set: updateData,
-    });
+    };
+
+    const updatedProfile = await this.brandProfileRepo.update(profileId, query);
 
     return {
       message: "Brand profile updated successfully",
       profile: updatedProfile,
     };
+  };
+
+  private _getBrandProfile = async (profileId: string) => {
+    const profile = await this.brandProfileRepo.findById(profileId);
+
+    if (!profile) throw new NotFoundError("Brand profile not found");
+
+    return profile;
   };
 }

@@ -1,19 +1,20 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../../../shared/utils/apiResponse.js";
-import { ProfileIdParams, UserIdParams } from "../../../shared/utils/validator.js";
 import { BrandProfileService } from "./brandProfile.service.js";
+import { BrandIdParam, UserIdParam } from "../../../shared/utils/validator.js";
+import { CreateBrandProfileDto } from "./brandProfile.dto.js";
 
 const brandProfileService = new BrandProfileService();
 
 export const BrandProfileController = {
   create: async (
-    req: Request<UserIdParams>,
+    req: Request<unknown, unknown, CreateBrandProfileDto>,
     res: Response,
     next: NextFunction,
   ) => {
     try {
       const result = await brandProfileService.createBrandProfile(
-        req.params.userId,
+        req.user!.id,
         req.body,
       );
 
@@ -24,13 +25,13 @@ export const BrandProfileController = {
   },
 
   getById: async (
-    req: Request<ProfileIdParams>,
+    req: Request<BrandIdParam>,
     res: Response,
     next: NextFunction,
   ) => {
     try {
       const result = await brandProfileService.getBrandProfileById(
-        req.params.profileId,
+        req.params.brandId,
       );
 
       ApiResponse.success(res, result);
@@ -39,16 +40,11 @@ export const BrandProfileController = {
     }
   },
 
-  getByUserId: async (
-    req: Request<UserIdParams>,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  getByUserId: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result =
-        await brandProfileService.getBrandProfileByUserId(
-          req.params.userId,
-        );
+      const result = await brandProfileService.getBrandProfileByUserId(
+        req.user!.id,
+      );
 
       ApiResponse.success(res, result);
     } catch (error) {
@@ -57,13 +53,13 @@ export const BrandProfileController = {
   },
 
   update: async (
-    req: Request<ProfileIdParams>,
+    req: Request<BrandIdParam>,
     res: Response,
     next: NextFunction,
   ) => {
     try {
       const result = await brandProfileService.updateBrandProfile(
-        req.params.profileId,
+        req.params.brandId,
         req.body,
       );
 

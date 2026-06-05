@@ -1,22 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../../../shared/utils/apiResponse.js";
-import {
-  ProfileIdParams,
-  UserIdParams,
-} from "../../../shared/utils/validator.js";
+import { InfluencerIdParam } from "../../../shared/utils/validator.js";
 import { InfluencerProfileService } from "./influencerProfile.service.js";
 
 const influencerProfileService = new InfluencerProfileService();
 
 export const InfluencerProfileController = {
-  create: async (
-    req: Request<UserIdParams>,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  create: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await influencerProfileService.createInfluencerProfile(
-        req.params.userId,
+        req.user!.id,
         req.body,
       );
 
@@ -27,13 +20,13 @@ export const InfluencerProfileController = {
   },
 
   getById: async (
-    req: Request<ProfileIdParams>,
+    req: Request<InfluencerIdParam>,
     res: Response,
     next: NextFunction,
   ) => {
     try {
       const result = await influencerProfileService.getInfluencerProfileById(
-        req.params.profileId,
+        req.params.influencerId,
       );
 
       ApiResponse.success(res, result);
@@ -42,15 +35,11 @@ export const InfluencerProfileController = {
     }
   },
 
-  getByUserId: async (
-    req: Request<UserIdParams>,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  getByUserId: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result =
         await influencerProfileService.getInfluencerProfileByUserId(
-          req.params.userId,
+          req.user!.id,
         );
 
       ApiResponse.success(res, result);
@@ -60,13 +49,13 @@ export const InfluencerProfileController = {
   },
 
   update: async (
-    req: Request<ProfileIdParams>,
+    req: Request<InfluencerIdParam>,
     res: Response,
     next: NextFunction,
   ) => {
     try {
       const result = await influencerProfileService.updateInfluencerProfile(
-        req.params.profileId,
+        req.params.influencerId,
         req.body,
       );
 

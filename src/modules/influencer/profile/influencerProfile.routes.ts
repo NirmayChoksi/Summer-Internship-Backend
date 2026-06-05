@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validate } from "../../../shared/middlewares/validate.middleware.js";
 import {
-  profileIdParamSchema,
+  influencerIdParamSchema,
   userIdParamSchema,
 } from "../../../shared/utils/validator.js";
 import { InfluencerProfileController } from "./influencerProfile.controller.js";
@@ -13,27 +13,23 @@ import {
 export const InfluencerProfileRouter = Router();
 
 InfluencerProfileRouter.post(
-  "/:userId",
-  validate({ params: userIdParamSchema, body: createInfluencerProfileDto }),
+  "/",
+  validate({ body: createInfluencerProfileDto }),
   InfluencerProfileController.create,
 );
 
+InfluencerProfileRouter.get("/user", InfluencerProfileController.getByUserId);
+
 InfluencerProfileRouter.get(
-  "/:profileId",
-  validate({ params: profileIdParamSchema }),
+  "/:influencerId",
+  validate({ params: influencerIdParamSchema }),
   InfluencerProfileController.getById,
 );
 
-InfluencerProfileRouter.get(
-  "/user/:userId",
-  validate({ params: userIdParamSchema }),
-  InfluencerProfileController.getByUserId,
-);
-
 InfluencerProfileRouter.patch(
-  "/:profileId",
+  "/:influencerId",
   validate({
-    params: profileIdParamSchema,
+    params: influencerIdParamSchema,
     body: updateInfluencerProfileDto,
   }),
   InfluencerProfileController.update,
