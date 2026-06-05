@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { MODELS } from "../../shared/types/constants.js";
 
 export enum UserRole {
   Admin = "ADMIN",
@@ -59,4 +60,4 @@ const userSchema = new Schema<IUser>(
   },
 );
 
-export const User = mongoose.model<IUser>("User", userSchema);
+export const User = mongoose.model<IUser>(MODELS.user, userSchema);

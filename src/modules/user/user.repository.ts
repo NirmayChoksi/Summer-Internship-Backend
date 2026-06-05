@@ -16,7 +16,7 @@ export class UserRepository {
 
   update = async (id: string, query: UpdateQuery<IUser>) => {
     return await User.findByIdAndUpdate(id, query, {
-      returnDocument:'after'
+      returnDocument: "after",
     });
   };
 }

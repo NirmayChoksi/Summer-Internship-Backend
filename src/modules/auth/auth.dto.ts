@@ -1,6 +1,6 @@
 import z from "zod";
-import { UserRole } from "../user/user.model.js";
 import { objectIdSchema } from "../../shared/utils/validator.js";
+import { UserRole } from "../user/user.model.js";
 
 export const registerDto = z.object({
   email: z.email().transform((val) => val.toLowerCase()),
