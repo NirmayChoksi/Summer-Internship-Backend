@@ -12,6 +12,7 @@ import { InfluencerRouter } from "./modules/influencer/influencer.routes.js";
 import { UploadRouter } from "./modules/upload/upload.routes.js";
 import { authMiddleware } from "./shared/middlewares/auth.middleware.js";
 import { errorMiddleware } from "./shared/middlewares/error.middleware.js";
+import { CampaignRouter } from "./modules/campaign/campaign.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,7 +54,7 @@ app.use("/brand", BrandRouter);
 
 app.use("/influencer", InfluencerRouter);
 
-app.use("/influencer/profile", InfluencerProfileRouter);
+app.use("/campaign", CampaignRouter);
 
 app.use((_req, res) =>
   res.status(404).json({ success: false, error: "Route not found" }),
