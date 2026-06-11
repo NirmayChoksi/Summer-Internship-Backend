@@ -28,3 +28,7 @@ export type InfluencerIdParam = z.infer<typeof influencerIdParamSchema>;
 export const campaignIdParamSchema = createIdParamSchema("campaignId");
 
 export type CampaignIdParam = z.infer<typeof campaignIdParamSchema>;
+
+export const catalogueIdParamSchema = createIdParamSchema("catalogueId");
+
+export type CatalogueIdParam = z.infer<typeof catalogueIdParamSchema>;

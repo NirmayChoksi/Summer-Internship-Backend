@@ -7,19 +7,19 @@ export class BrandProfileRepository {
   };
 
   findById = async (id: string) => {
-    return await BrandProfile.findById(id);
+    return await BrandProfile.findById(id).lean({ virtuals: true });
   };
 
   findByUserId = async (userId: Types.ObjectId) => {
     return await BrandProfile.findOne({
       user: userId,
-    });
+    }).lean({ virtuals: true });
   };
 
   findByEmail = async (email: string) => {
     return await BrandProfile.findOne({
       email,
-    });
+    }).lean({ virtuals: true });
   };
 
   update = async (id: string, query: UpdateQuery<IBrandProfile>) => {

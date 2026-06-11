@@ -9,7 +9,6 @@ interface ValidateSchemas {
 
 export const validate = (schemas: ValidateSchemas): RequestHandler => {
   return (req, res, next) => {
-    console.log(req.url);
     const errors: Record<string, unknown> = {};
 
     if (schemas.body) {

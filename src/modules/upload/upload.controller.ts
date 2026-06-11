@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-
-import { BadRequestError } from "../../shared/utils/appError.js";
 import { ApiResponse } from "../../shared/utils/apiResponse.js";
+import { UploadService } from "./upload.service.js";
+
+const uploadService = new UploadService();
 
 export const UploadController = {
   uploadCompanyLogo: async (
@@ -10,11 +11,9 @@ export const UploadController = {
     next: NextFunction,
   ) => {
     try {
-      if (!req.file) throw new BadRequestError("Company logo not uploaded");
+      const result = await uploadService.uploadCompanyLogo(req.file);
 
-      return ApiResponse.success(res, {
-        url: `uploads/companyLogos/${req.file.filename}`,
-      });
+      return ApiResponse.success(res, result);
     } catch (error) {
       next(error);
     }

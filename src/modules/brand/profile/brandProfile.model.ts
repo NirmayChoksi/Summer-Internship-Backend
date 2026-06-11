@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
+import mongooseLeanVirtuals from "mongoose-lean-virtuals";
 import { env } from "../../../config/env.js";
 import { MODELS } from "../../../shared/types/constants.js";
 
@@ -110,27 +111,17 @@ const brandProfileSchema = new Schema<IBrandProfile>(
   {
     timestamps: true,
 
-    toJSON: {
-      transform: (_doc, ret) => {
-        if (ret.companyLogo) {
-          ret.companyLogo = `${env.BASE_URL}/${ret.companyLogo}`;
-        }
+    toJSON: { virtuals: true },
 
-        return ret;
-      },
-    },
-
-    toObject: {
-      transform: (_doc, ret) => {
-        if (ret.companyLogo) {
-          ret.companyLogo = `${env.BASE_URL}/${ret.companyLogo}`;
-        }
-
-        return ret;
-      },
-    },
+    toObject: { virtuals: true },
   },
 );
+
+brandProfileSchema.virtual("companyLogoUrl").get(function () {
+  return `${env.BASE_URL}/${this.companyLogo}`;
+});
+
+brandProfileSchema.plugin(mongooseLeanVirtuals);
 
 export const BrandProfile = mongoose.model<IBrandProfile>(
   MODELS.brandProfile,

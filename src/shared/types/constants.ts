@@ -1,6 +1,7 @@
 export const MODELS = {
-  user: "User",
   brandProfile: "BrandProfile",
-  influencerProfile: "InfluencerProfile",
   campaign: "Campaign",
+  catalogue: "Catalogue",
+  influencerProfile: "InfluencerProfile",
+  user: "User",
 };

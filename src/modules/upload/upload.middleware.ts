@@ -31,6 +31,7 @@ const imageFilter = (
   cb: FileFilterCallback,
 ) => {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
+
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -48,6 +49,7 @@ const documentFilter = (
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ];
+
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -55,28 +57,68 @@ const documentFilter = (
   }
 };
 
-// const anyFilter = (
-//   _req: Request,
-//   _file: Express.Multer.File,
-//   cb: FileFilterCallback,
-// ) => {
-//   cb(null, true);
-// };
+const catalogueFilter = (
+  _req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback,
+) => {
+  const allowed = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "video/mp4",
+    "video/quicktime",
+    "video/x-msvideo",
+    "video/webm",
+    "video/x-matroska",
+  ];
 
-export const uploadCompanyLogo = multer({
-  storage: diskStorage("companyLogos"),
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new BadRequestError("Only images, PDFs and Word documents are allowed"));
+  }
+};
+
+const createUploadMiddleware = ({
+  folder,
+  fileFilter,
+  maxSize = 5 * 1024 * 1024,
+}: {
+  folder: string;
+  fileFilter: (
+    req: Request,
+    file: Express.Multer.File,
+    cb: FileFilterCallback,
+  ) => void;
+  maxSize?: number;
+}) =>
+  multer({
+    storage: diskStorage(folder),
+    fileFilter,
+    limits: {
+      fileSize: maxSize,
+    },
+  });
+
+export const uploadCompanyLogo = createUploadMiddleware({
+  folder: "companyLogos",
   fileFilter: imageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
 }).single("companyLogo");
 
-export const uploadDocument = multer({
-  storage: diskStorage("documents"),
+export const uploadProfilePicture = createUploadMiddleware({
+  folder: "profilePictures",
+  fileFilter: imageFilter,
+}).single("profilePicture");
+
+export const uploadDocument = createUploadMiddleware({
+  folder: "documents",
   fileFilter: documentFilter,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  maxSize: 10 * 1024 * 1024,
 }).single("document");
 
-export const uploadGallery = multer({
-  storage: diskStorage("gallery"),
-  fileFilter: imageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
-}).array("images", 10);
+export const uploadCatalogue = createUploadMiddleware({
+  folder: "catalogues",
+  fileFilter: catalogueFilter,
+  maxSize: 20 * 1024 * 1024,
+}).array("catalogues", 20);
