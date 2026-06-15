@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../../../shared/utils/apiResponse.js";
+import { GetInstagramMediaDto } from "./catalogue.dto.js";
 import { CatalogueService } from "./catalogue.service.js";
 
 const catalogueService = new CatalogueService();
@@ -20,6 +21,25 @@ export const CatalogueController = {
   getMyCatalogue: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await catalogueService.getMyCatalogue(req.user!.id);
+
+      ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  getInstagramMedia: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const options = req.validatedQuery as GetInstagramMediaDto;
+
+      const result = await catalogueService.getInstagramMedia(
+        req.user!.id,
+        options,
+      );
 
       ApiResponse.success(res, result);
     } catch (error) {

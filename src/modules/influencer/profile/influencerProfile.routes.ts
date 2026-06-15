@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { validate } from "../../../shared/middlewares/validate.middleware.js";
-import {
-  influencerIdParamSchema,
-  userIdParamSchema,
-} from "../../../shared/utils/validator.js";
+import { influencerIdParamSchema } from "../../../shared/utils/validator.js";
 import { InfluencerProfileController } from "./influencerProfile.controller.js";
 import {
   createInfluencerProfileDto,
@@ -24,6 +21,11 @@ InfluencerProfileRouter.get(
   "/:influencerId",
   validate({ params: influencerIdParamSchema }),
   InfluencerProfileController.getById,
+);
+
+InfluencerProfileRouter.patch(
+  "/refresh-instagram-followers",
+  InfluencerProfileController.refreshInstagramFollowers,
 );
 
 InfluencerProfileRouter.patch(

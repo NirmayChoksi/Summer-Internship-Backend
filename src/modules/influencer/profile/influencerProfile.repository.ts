@@ -1,7 +1,7 @@
 import { Types, UpdateQuery } from "mongoose";
 import {
-  InfluencerProfile,
   IInfluencerProfile,
+  InfluencerProfile,
 } from "./influencerProfile.model.js";
 
 export class InfluencerProfileRepository {
@@ -19,6 +19,12 @@ export class InfluencerProfileRepository {
     });
   };
 
+  findByUserIdWithInstagramToken = async (userId: Types.ObjectId) => {
+    return await InfluencerProfile.findOne({ user: userId }).select(
+      "+instagram.token",
+    );
+  };
+
   findByEmail = async (email: string) => {
     return await InfluencerProfile.findOne({
       email,
@@ -27,7 +33,7 @@ export class InfluencerProfileRepository {
 
   update = async (id: string, query: UpdateQuery<IInfluencerProfile>) => {
     return await InfluencerProfile.findByIdAndUpdate(id, query, {
-      returnDocument:'after'
+      returnDocument: "after",
     });
   };
 

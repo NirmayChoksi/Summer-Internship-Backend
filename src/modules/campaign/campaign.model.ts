@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 import { MODELS } from "../../shared/types/constants.js";
 import { Industry } from "../brand/profile/brandProfile.model.js";
-import { Platform } from "../influencer/profile/influencerProfile.model.js";
 
 export enum CampaignStatus {
   Active = "ACTIVE",
@@ -13,6 +12,12 @@ export enum InfluencerCampaignStatus {
   Pending = "PENDING",
   Accepted = "ACCEPTED",
   Rejected = "REJECTED",
+}
+
+export enum Platform {
+  Instagram = "INSTAGRAM",
+  Twitter = "TWITTER",
+  Youtube = "YOUTUBE",
 }
 
 export interface CampaignInfluencer {

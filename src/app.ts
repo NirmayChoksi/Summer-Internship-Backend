@@ -8,16 +8,19 @@ import { fileURLToPath } from "url";
 
 import { AuthRouter } from "./modules/auth/auth.routes.js";
 import { BrandRouter } from "./modules/brand/brand.routes.js";
+import { CampaignRouter } from "./modules/campaign/campaign.routes.js";
 import { InfluencerRouter } from "./modules/influencer/influencer.routes.js";
+import { InstagramRouter } from "./modules/instagram/instagram.routes.js";
 import { UploadRouter } from "./modules/upload/upload.routes.js";
 import { authMiddleware } from "./shared/middlewares/auth.middleware.js";
 import { errorMiddleware } from "./shared/middlewares/error.middleware.js";
-import { CampaignRouter } from "./modules/campaign/campaign.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+app.set("trust proxy", 1);
 
 app.use(
   helmet({
@@ -37,6 +40,9 @@ app.use(
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: { success: false, error: "Too many requests, slow down." },
+    validate: {
+      xForwardedForHeader: false,
+    },
   }),
 );
 
@@ -45,6 +51,8 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use("/auth", AuthRouter);
+
+app.use("/instagram", InstagramRouter);
 
 app.use(authMiddleware);
 

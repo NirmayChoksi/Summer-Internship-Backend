@@ -1,8 +1,7 @@
 import z from "zod";
 import { objectIdSchema } from "../../shared/utils/validator.js";
 import { Industry } from "../brand/profile/brandProfile.model.js";
-import { Platform } from "../influencer/profile/influencerProfile.model.js";
-import { InfluencerCampaignStatus } from "./campaign.model.js";
+import { InfluencerCampaignStatus, Platform } from "./campaign.model.js";
 
 export const createCampaignDto = z.object({
   title: z.string().min(5),

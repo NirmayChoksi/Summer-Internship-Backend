@@ -1,12 +1,14 @@
 import { Types } from "mongoose";
 import {
+  BadRequestError,
   ForbiddenError,
-  NotFoundError,
+  NotFoundError
 } from "../../../shared/utils/appError.js";
 import {
   deleteFile,
   generateCatalogueThumbnail,
 } from "../../../shared/utils/fileHelper.js";
+import { InstagramService } from "../../instagram/instagram.service.js";
 import { InfluencerProfileRepository } from "../profile/influencerProfile.repository.js";
 import { ICatalogue } from "./catalogue.model.js";
 import { CatalogueRepository } from "./catalogue.repository.js";
@@ -14,6 +16,7 @@ import { CatalogueRepository } from "./catalogue.repository.js";
 export class CatalogueService {
   private catalogueRepo = new CatalogueRepository();
   private influencerProfileRepo = new InfluencerProfileRepository();
+  private instagramService = new InstagramService();
 
   createMany = async (userId: string, files: Express.Multer.File[]) => {
     const influencerProfile = await this._getInfluencerProfileByUserId(userId);
@@ -55,6 +58,45 @@ export class CatalogueService {
       catalogues,
     };
   };
+
+  async getInstagramMedia(
+    userId: string,
+    options?: {
+      after?: string;
+      limit?: number;
+    },
+  ) {
+    const profile =
+      await this.influencerProfileRepo.findByUserIdWithInstagramToken(
+        new Types.ObjectId(userId),
+      );
+
+    if (!profile) throw new NotFoundError("Influencer profile not found");
+
+    if (!profile.instagram.token)
+      throw new BadRequestError("Instagram account not connected");
+
+    const result = await this.instagramService.getMedia(
+      profile.instagram.token,
+      options,
+    );
+
+    return {
+      media: result.media.map((item: any) => ({
+        id: item.id,
+        type: item.media_type,
+        mediaUrl: item.media_url,
+        thumbnailUrl: item.thumbnail_url,
+        caption: item.caption,
+        permalink: item.permalink,
+        createdAt: item.timestamp,
+      })),
+      pagination: {
+        nextCursor: result.nextCursor,
+        hasNextPage: result.hasNextPage,
+      },
+    };
+  }
 
   deleteCatalogue = async (catalogueId: string, userId: string) => {
     const catalogue = await this.catalogueRepo.findById(catalogueId);

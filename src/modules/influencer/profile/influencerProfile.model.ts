@@ -7,26 +7,20 @@ export enum Niche {
   Finance = "FINANCE",
 }
 
-export enum Platform {
-  Instagram = "INSTAGRAM",
-  Twitter = "TWITTER",
-  Youtube = "YOUTUBE",
-}
-
 export interface PlatformStats {
   username: string;
   followers: number;
+  token?: string;
 }
 
-export type PlatformName = Lowercase<Platform>;
-
-export type Platforms = Partial<Record<PlatformName, PlatformStats>>;
 export interface IInfluencerProfile extends Document {
   user: Types.ObjectId;
   bio: string;
   niche: Niche[];
   country: string;
-  platforms: Platforms;
+  instagram: PlatformStats;
+  twitter?: PlatformStats;
+  youtube?: PlatformStats;
   pastWorks: string[];
   firstName: string;
   lastName: string;
@@ -46,12 +40,14 @@ const platformStatsSchema = new Schema<PlatformStats>(
       required: true,
       min: 0,
     },
+
+    token: {
+      type: String,
+      required: false,
+      select: false,
+    },
   },
   { _id: false },
-);
-
-const validPlatforms = Object.values(Platform).map(
-  (p) => p.toLowerCase() as PlatformName,
 );
 
 const influencerProfileSchema = new Schema<IInfluencerProfile>(
@@ -82,23 +78,19 @@ const influencerProfileSchema = new Schema<IInfluencerProfile>(
       trim: true,
     },
 
-    platforms: {
-      type: Map,
-      of: platformStatsSchema,
-      default: {},
-      validate: {
-        validator(value?: Map<string, PlatformStats>) {
-          if (!value) return false;
+    instagram: {
+      type: platformStatsSchema,
+      required: true,
+    },
 
-          return (
-            value.size > 0 &&
-            [...value.keys()].every((key) =>
-              validPlatforms.includes(key as PlatformName),
-            )
-          );
-        },
-        message: "At least one valid platform is required",
-      },
+    twitter: {
+      type: platformStatsSchema,
+      required: false,
+    },
+
+    youtube: {
+      type: platformStatsSchema,
+      required: false,
     },
 
     pastWorks: {

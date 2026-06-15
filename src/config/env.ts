@@ -10,6 +10,12 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default("7d"),
   BASE_URL: z.url().default("http://localhost:3000"),
+  META_APP_ID: z.coerce.number(),
+  META_APP_SECRET: z.string(),
+  META_REDIRECT_URI: z.url(),
+  INSTAGRAM_APP_ID: z.string(),
+  INSTAGRAM_APP_SECRET: z.string(),
+  INSTAGRAM_REDIRECT_URI: z.url(),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -48,6 +48,22 @@ export const InfluencerProfileController = {
     }
   },
 
+  refreshInstagramFollowers: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const result = await influencerProfileService.refreshInstagramFollowers(
+        req.user!.id,
+      );
+
+      ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
   update: async (
     req: Request<InfluencerIdParam>,
     res: Response,
