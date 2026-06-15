@@ -80,6 +80,29 @@ const catalogueFilter = (
   }
 };
 
+const postFilter = (
+  _req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback,
+) => {
+  const allowed = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "video/mp4",
+    "video/quicktime",
+    "video/x-msvideo",
+    "video/webm",
+    "video/x-matroska",
+  ];
+
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new BadRequestError("Only images, PDFs and Word documents are allowed"));
+  }
+};
+
 const createUploadMiddleware = ({
   folder,
   fileFilter,
@@ -122,3 +145,9 @@ export const uploadCatalogue = createUploadMiddleware({
   fileFilter: catalogueFilter,
   maxSize: 20 * 1024 * 1024,
 }).array("catalogues", 20);
+
+export const uploadPost = createUploadMiddleware({
+  folder: "posts",
+  fileFilter: postFilter,
+  maxSize: 20 * 1024 * 1024,
+}).single("post");

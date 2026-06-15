@@ -18,4 +18,14 @@ export const UploadController = {
       next(error);
     }
   },
+
+  uploadPost: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await uploadService.uploadPost(req.file);
+
+      return ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
 };

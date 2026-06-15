@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import {
   BadRequestError,
   ForbiddenError,
-  NotFoundError
+  NotFoundError,
 } from "../../../shared/utils/appError.js";
 import {
   deleteFile,
@@ -66,10 +66,10 @@ export class CatalogueService {
       limit?: number;
     },
   ) {
-    const profile =
-      await this.influencerProfileRepo.findByUserIdWithInstagramToken(
-        new Types.ObjectId(userId),
-      );
+    const profile = await this.influencerProfileRepo.findByUserId(
+      new Types.ObjectId(userId),
+      "+instagram.token",
+    );
 
     if (!profile) throw new NotFoundError("Influencer profile not found");
 

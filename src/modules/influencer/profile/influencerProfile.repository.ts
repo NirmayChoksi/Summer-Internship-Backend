@@ -13,16 +13,10 @@ export class InfluencerProfileRepository {
     return await InfluencerProfile.findById(id);
   };
 
-  findByUserId = async (userId: Types.ObjectId) => {
+  findByUserId = async (userId: Types.ObjectId, select?: string) => {
     return await InfluencerProfile.findOne({
       user: userId,
-    });
-  };
-
-  findByUserIdWithInstagramToken = async (userId: Types.ObjectId) => {
-    return await InfluencerProfile.findOne({ user: userId }).select(
-      "+instagram.token",
-    );
+    }).select(select ?? "");
   };
 
   findByEmail = async (email: string) => {

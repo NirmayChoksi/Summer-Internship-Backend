@@ -17,8 +17,8 @@ import { InfluencerProfileRepository } from "./influencerProfile.repository.js";
 
 export class InfluencerProfileService {
   private influencerProfileRepo = new InfluencerProfileRepository();
-  private userRepo = new UserRepository();
   private instagramService = new InstagramService();
+  private userRepo = new UserRepository();
 
   createInfluencerProfile = async (
     userId: string,
@@ -80,10 +80,10 @@ export class InfluencerProfileService {
   };
 
   async refreshInstagramFollowers(userId: string) {
-    const profile =
-      await this.influencerProfileRepo.findByUserIdWithInstagramToken(
-        new Types.ObjectId(userId),
-      );
+    const profile = await this.influencerProfileRepo.findByUserId(
+      new Types.ObjectId(userId),
+      "+instagram.token",
+    );
 
     if (!profile) throw new NotFoundError("Influencer profile not found");
 
@@ -115,13 +115,14 @@ export class InfluencerProfileService {
     profileId: string,
     data: UpdateInfluencerProfileDto,
   ) => {
-    const existingProfile = await this._getInfluencerProfile(profileId);
-
     const updateData = removeUndefinedFields(data);
 
     const updatedProfile = await this.influencerProfileRepo.update(profileId, {
       $set: updateData,
     });
+
+    if (!updatedProfile)
+      throw new NotFoundError("Influencer profile not found");
 
     return {
       message: "Influencer profile updated successfully",

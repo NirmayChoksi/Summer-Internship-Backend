@@ -11,6 +11,7 @@ export interface PlatformStats {
   username: string;
   followers: number;
   token?: string;
+  userId?: string;
 }
 
 export interface IInfluencerProfile extends Document {
@@ -42,6 +43,12 @@ const platformStatsSchema = new Schema<PlatformStats>(
     },
 
     token: {
+      type: String,
+      required: false,
+      select: false,
+    },
+
+    userId: {
       type: String,
       required: false,
       select: false,

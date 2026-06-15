@@ -8,6 +8,7 @@ const platformStatsSchema = z.object({
 
 const instagramCreateSchema = platformStatsSchema.extend({
   token: z.string().min(1),
+  userId: z.string().min(1),
 });
 
 const baseInfluencerProfileSchema = z.object({
