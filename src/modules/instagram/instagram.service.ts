@@ -141,12 +141,12 @@ export class InstagramService {
     );
 
     const publishData = await response.json();
+    console.log("🚀 ~ publishData:", publishData);
 
-    if (!response.ok) {
+    if (!response.ok)
       throw new BadRequestError(
         publishData.error?.message ?? "Failed to publish media",
       );
-    }
 
     return publishData;
   };
@@ -190,6 +190,8 @@ export class InstagramService {
     if (!containerData.id)
       throw new BadRequestError("Failed to get media container id");
 
+    console.log("🚀 ~ containerData:", containerData);
+
     return containerData.id;
   };
 
@@ -199,6 +201,7 @@ export class InstagramService {
     maxAttempts = 20,
     intervalMs = 3000,
   ) => {
+    console.log("🚀 ~ creationId:", creationId);
     for (let i = 0; i < maxAttempts; i++) {
       const response = await fetch(
         `https://graph.instagram.com/v24.0/${creationId}` +
