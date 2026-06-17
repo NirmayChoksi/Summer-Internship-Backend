@@ -1,5 +1,9 @@
-export interface CaptionResult {
-  caption: string;
-  hashtags: string[];
+export interface Caption {
   tone: string;
+  caption: string;
+}
+
+export interface CaptionResult {
+  captions: Caption[];
+  hashtags: string[];
 }

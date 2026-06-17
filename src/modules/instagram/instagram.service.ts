@@ -84,10 +84,7 @@ export class InstagramService {
 
   getMedia = async (
     token: string,
-    options?: {
-      after?: string;
-      limit?: number;
-    },
+    options?: { after?: string; limit?: number },
   ) => {
     const params = new URLSearchParams({
       fields:
@@ -114,5 +111,111 @@ export class InstagramService {
       nextCursor: data.paging?.cursors?.after,
       hasNextPage: Boolean(data.paging?.next),
     };
+  };
+
+  publishMedia = async (
+    accessToken: string,
+    instagramUserId: string,
+    data: { caption: string; imageUrl?: string; videoUrl?: string },
+  ) => {
+    const containerId = await this._createMediaContainer(
+      accessToken,
+      instagramUserId,
+      data,
+    );
+
+    if (data.videoUrl)
+      await this._waitForContainerReady(containerId, accessToken);
+
+    const publishParams = new URLSearchParams({
+      creation_id: containerId,
+      access_token: accessToken,
+    });
+
+    const response = await fetch(
+      `https://graph.instagram.com/v24.0/${instagramUserId}/media_publish`,
+      {
+        method: "POST",
+        body: publishParams,
+      },
+    );
+
+    const publishData = await response.json();
+
+    if (!response.ok) {
+      throw new BadRequestError(
+        publishData.error?.message ?? "Failed to publish media",
+      );
+    }
+
+    return publishData;
+  };
+
+  private _createMediaContainer = async (
+    accessToken: string,
+    instagramUserId: string,
+    data: {
+      caption: string;
+      imageUrl?: string;
+      videoUrl?: string;
+    },
+  ) => {
+    const params = new URLSearchParams({
+      access_token: accessToken,
+      caption: data.caption,
+    });
+
+    if (data.imageUrl) params.set("image_url", data.imageUrl);
+
+    if (data.videoUrl) {
+      params.set("video_url", data.videoUrl);
+      params.set("media_type", "REELS");
+    }
+
+    const response = await fetch(
+      `https://graph.instagram.com/v24.0/${instagramUserId}/media`,
+      {
+        method: "POST",
+        body: params,
+      },
+    );
+
+    const containerData = await response.json();
+
+    if (!response.ok)
+      throw new BadRequestError(
+        containerData.error?.message ?? "Failed to create media container",
+      );
+
+    if (!containerData.id)
+      throw new BadRequestError("Failed to get media container id");
+
+    return containerData.id;
+  };
+
+  private _waitForContainerReady = async (
+    creationId: string,
+    accessToken: string,
+    maxAttempts = 20,
+    intervalMs = 3000,
+  ) => {
+    for (let i = 0; i < maxAttempts; i++) {
+      const response = await fetch(
+        `https://graph.instagram.com/v24.0/${creationId}` +
+          `?fields=status_code,status` +
+          `&access_token=${accessToken}`,
+      );
+
+      const data = await response.json();
+
+      if (data.status_code === "FINISHED") return;
+
+      if (data.status_code === "ERROR")
+        throw new BadRequestError(data.status ?? "Media processing failed");
+
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+
+    throw new BadRequestError("Media processing timed out");
   };
 }
