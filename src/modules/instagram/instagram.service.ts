@@ -124,8 +124,7 @@ export class InstagramService {
       data,
     );
 
-    if (data.videoUrl)
-      await this._waitForContainerReady(containerId, accessToken);
+    await this._waitForContainerReady(containerId, accessToken);
 
     const publishParams = new URLSearchParams({
       creation_id: containerId,
@@ -210,6 +209,8 @@ export class InstagramService {
       );
 
       const data = await response.json();
+
+      console.log("Container status:", data);
 
       if (data.status_code === "FINISHED") return;
 
