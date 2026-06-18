@@ -77,11 +77,14 @@ export class PostService {
         },
       ],
       temperature: 0.8,
+      top_p: 0.95,
     });
 
     const rawResponse = response.choices[0].message.content;
 
     if (!rawResponse) throw new InternalServerError("Failed to refine caption");
+
+    console.log("Refine response raw:", rawResponse);
 
     const result = JSON.parse(rawResponse.replace(/```json\s*|\s*```/g, ""));
 
@@ -195,6 +198,8 @@ export class PostService {
     Rewrite the caption according to the instruction.
 
     Keep the meaning unless the instruction explicitly asks otherwise.
+
+    Vary your sentence structure and word choice from the original — do not just lightly tweak it.
 
     Return ONLY valid JSON:
 
