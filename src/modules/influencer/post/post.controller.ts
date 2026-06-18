@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../../../shared/utils/apiResponse.js";
-import { GenerateCaptionDto, PublishMediaDto } from "./post.dto.js";
+import {
+  GenerateCaptionDto,
+  PublishMediaDto,
+  RefineCaptionDto,
+} from "./post.dto.js";
 import { PostService } from "./post.service.js";
 
 const postService = new PostService();
@@ -15,6 +19,23 @@ export const PostController = {
       const result = await postService.generateCaptionWithGemini(
         req.body.userText,
         req.file,
+      );
+
+      ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  refineCaption: async (
+    req: Request<unknown, unknown, RefineCaptionDto>,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const result = await postService.refineCaptionWithGemini(
+        req.body.caption,
+        req.body.caption,
       );
 
       ApiResponse.success(res, result);

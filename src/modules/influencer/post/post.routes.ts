@@ -2,7 +2,11 @@ import { Router } from "express";
 import { validate } from "../../../shared/middlewares/validate.middleware.js";
 import { uploadPost } from "../../upload/upload.middleware.js";
 import { PostController } from "./post.controller.js";
-import { generateCaptionDto, publishMediaDto } from "./post.dto.js";
+import {
+  generateCaptionDto,
+  publishMediaDto,
+  refineCaptionDto,
+} from "./post.dto.js";
 
 export const PostRouter = Router();
 
@@ -11,6 +15,12 @@ PostRouter.post(
   uploadPost,
   validate({ body: generateCaptionDto }),
   PostController.generateCaption,
+);
+
+PostRouter.post(
+  "/refine-caption",
+  validate({ body: refineCaptionDto }),
+  PostController.refineCaption,
 );
 
 PostRouter.post(

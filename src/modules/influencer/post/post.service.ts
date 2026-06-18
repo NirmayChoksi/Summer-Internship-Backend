@@ -65,6 +65,29 @@ export class PostService {
     return result;
   };
 
+  refineCaptionWithGemini = async (caption: string, instruction: string) => {
+    const promptText = this._getRefineCaptionPrompt(caption, instruction);
+
+    const response = await this.openai.chat.completions.create({
+      model: "gemini-2.5-flash",
+      messages: [
+        {
+          role: "user",
+          content: promptText,
+        },
+      ],
+      temperature: 0.8,
+    });
+
+    const rawResponse = response.choices[0].message.content;
+
+    if (!rawResponse) throw new InternalServerError("Failed to refine caption");
+
+    const result = JSON.parse(rawResponse.replace(/```json\s*|\s*```/g, ""));
+
+    return result;
+  };
+
   publishMedia = async (userId: string, data: PublishMediaDto) => {
     const profile = await this.influencerProfileRepo.findByUserId(
       new Types.ObjectId(userId),
@@ -155,6 +178,28 @@ export class PostService {
         "tag1",
         "tag2"
       ]
+    }
+    `;
+  };
+
+  private _getRefineCaptionPrompt = (caption: string, instruction: string) => {
+    return `
+    You are an expert social media copywriter.
+
+    Current caption:
+    "${caption}"
+
+    User instruction:
+    "${instruction}"
+
+    Rewrite the caption according to the instruction.
+
+    Keep the meaning unless the instruction explicitly asks otherwise.
+
+    Return ONLY valid JSON:
+
+    {
+      "caption": "rewritten caption"
     }
     `;
   };
