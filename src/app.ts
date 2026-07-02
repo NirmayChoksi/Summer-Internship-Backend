@@ -12,14 +12,11 @@ import { CampaignRouter } from "./modules/campaign/campaign.routes.js";
 import { InfluencerRouter } from "./modules/influencer/influencer.routes.js";
 import { InstagramRouter } from "./modules/instagram/instagram.routes.js";
 import { UploadRouter } from "./modules/upload/upload.routes.js";
-import { startCampaignStatusJob } from "./shared/jobs/campaignStatus.job.js";
 import { authMiddleware } from "./shared/middlewares/auth.middleware.js";
 import { errorMiddleware } from "./shared/middlewares/error.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-startCampaignStatusJob();
 
 const app = express();
 

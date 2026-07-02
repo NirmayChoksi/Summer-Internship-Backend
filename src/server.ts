@@ -6,9 +6,13 @@ import app from "./app.js";
 import { env } from "./config/env.js";
 import { connectDB } from "./database/connection.js";
 import { logger } from "./shared/utils/logger.js";
+import { startCampaignStatusJob } from "./shared/jobs/campaignStatus.job.js";
 
 async function bootstrap() {
   await connectDB();
+
+  const campaignJob = startCampaignStatusJob();
+  logger.info("Background cron schedules initialized.");
 
   const server = app.listen(env.PORT, () => {
     logger.info(`Server running on port ${env.PORT} [${env.NODE_ENV}]`);
