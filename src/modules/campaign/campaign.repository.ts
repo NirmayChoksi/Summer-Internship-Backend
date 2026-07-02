@@ -1,11 +1,11 @@
-import { _QueryFilter, Types, UpdateQuery } from "mongoose";
+import { QueryFilter, Types, UpdateQuery } from "mongoose";
+import { Pagination } from "../../shared/types/interfaces.js";
+import { CampaignFilters } from "./campaign.dto.js";
 import {
   Campaign,
   ICampaign,
   InfluencerCampaignStatus,
 } from "./campaign.model.js";
-import { CampaignFilters } from "./campaign.dto.js";
-import { Pagination } from "../../shared/types/interfaces.js";
 
 export class CampaignRepository {
   private CAMPAIGN_POPULATE = [
@@ -92,6 +92,13 @@ export class CampaignRepository {
     return await Campaign.findByIdAndUpdate(id, query, {
       returnDocument: "after",
     }).populate(this.CAMPAIGN_POPULATE);
+  };
+
+  updateMany = async (
+    filter: QueryFilter<ICampaign>,
+    update: UpdateQuery<ICampaign>,
+  ) => {
+    return await Campaign.updateMany(filter, update);
   };
 
   joinCampaign = async (

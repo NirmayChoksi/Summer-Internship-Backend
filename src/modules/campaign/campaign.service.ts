@@ -30,8 +30,15 @@ export class CampaignService {
   createCampaign = async (userId: string, data: CreateCampaignDto) => {
     const brandProfile = await this._getBrandProfileByUserId(userId);
 
+    let status: CampaignStatus = CampaignStatus.Inactive;
+
+    if (data.startDate <= new Date()) {
+      status = CampaignStatus.Active;
+    }
+
     const campaign = await this.campaignRepo.create({
       brand: brandProfile._id,
+      status,
       ...data,
     });
 
@@ -254,6 +261,37 @@ export class CampaignService {
       message: "Campaign updated successfully",
       campaign: updatedCampaign,
     };
+  };
+
+  updateCampaignStatuses = async () => {
+    const now = new Date();
+
+    await this.campaignRepo.updateMany(
+      {
+        startDate: { $lte: now },
+        endDate: { $gt: now },
+        status: CampaignStatus.Inactive,
+      },
+      {
+        $set: {
+          status: CampaignStatus.Active,
+        },
+      },
+    );
+
+    await this.campaignRepo.updateMany(
+      {
+        endDate: { $lte: now },
+        status: {
+          $nin: [CampaignStatus.Completed],
+        },
+      },
+      {
+        $set: {
+          status: CampaignStatus.Completed,
+        },
+      },
+    );
   };
 
   deleteCampaign = async (campaignId: string, userId: string) => {
