@@ -1,4 +1,6 @@
 import { Types, UpdateQuery } from "mongoose";
+import { emailService } from "../../shared/services/email.services.js";
+import { campaignStatusTemplate } from "../../shared/templates/campaign-status.template.js";
 import {
   ConflictError,
   ForbiddenError,
@@ -7,7 +9,7 @@ import {
 import { removeUndefinedFields } from "../../shared/utils/removeUndefinedFields.js";
 import { BrandProfileRepository } from "../brand/profile/brandProfile.repository.js";
 import { InfluencerProfileRepository } from "../influencer/profile/influencerProfile.repository.js";
-import { UserRole } from "../user/user.model.js";
+import { IUser, UserRole } from "../user/user.model.js";
 import {
   CampaignFilters,
   ChangeInfluencerStatusDto,
@@ -180,6 +182,7 @@ export class CampaignService {
 
     const influencerProfile = await this._getInfluencerProfile(
       data.influencerId,
+      true,
     );
 
     const existingInfluencer = this._findCampaignInfluencer(
@@ -227,6 +230,29 @@ export class CampaignService {
       query,
     );
 
+    if (data.status === InfluencerCampaignStatus.Accepted)
+      await emailService.sendMail({
+        to: (influencerProfile.user as unknown as IUser).email,
+        subject: "You've Been Accepted!",
+        html: campaignStatusTemplate(
+          `${influencerProfile.firstName} ${influencerProfile.lastName}`,
+          campaign.title,
+          brandProfile.companyName,
+          InfluencerCampaignStatus.Accepted,
+        ),
+      });
+    else if (data.status === InfluencerCampaignStatus.Rejected)
+      await emailService.sendMail({
+        to: (influencerProfile.user as unknown as IUser).email,
+        subject: "Campaign Application Update",
+        html: campaignStatusTemplate(
+          `${influencerProfile.firstName} ${influencerProfile.lastName}`,
+          campaign.title,
+          brandProfile.companyName,
+          InfluencerCampaignStatus.Rejected,
+        ),
+      });
+
     return {
       message: "Influencer status updated successfully",
       campaign: updatedCampaign,
@@ -265,6 +291,7 @@ export class CampaignService {
 
   updateCampaignStatuses = async () => {
     const now = new Date();
+    console.log(now);
 
     await this.campaignRepo.updateMany(
       {
@@ -360,8 +387,14 @@ export class CampaignService {
     return campaign;
   };
 
-  private _getInfluencerProfile = async (influencerId: string) => {
-    const influencer = await this.influencerProfileRepo.findById(influencerId);
+  private _getInfluencerProfile = async (
+    influencerId: string,
+    populateUser?: boolean,
+  ) => {
+    const influencer = await this.influencerProfileRepo.findById(
+      influencerId,
+      populateUser,
+    );
 
     if (!influencer) throw new NotFoundError("Influencer profile not found");
 

@@ -9,8 +9,11 @@ export class InfluencerProfileRepository {
     return await InfluencerProfile.create(data);
   };
 
-  findById = async (id: string) => {
-    return await InfluencerProfile.findById(id);
+  findById = async (id: string, populateUser?: boolean) => {
+    let query = InfluencerProfile.findById(id);
+
+    if (populateUser) query.populate("user");
+    return await query;
   };
 
   findByUserId = async (userId: Types.ObjectId, select?: string) => {

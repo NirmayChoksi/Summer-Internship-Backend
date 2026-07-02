@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UpdateQuery } from "mongoose";
 import { env } from "../../config/env.js";
+import { emailService } from "../../shared/services/email.services.js";
+import { otpTemplate } from "../../shared/templates/otp.template.js";
 import {
   BadRequestError,
   ConflictError,
@@ -28,8 +30,13 @@ export class AuthService {
       throw new ConflictError("Account with this email already exists");
     }
 
-    //TODO: Implement nodeMailer to send OTP
     const { otp, otpExpiresAt } = this._generateOtpData();
+
+    await emailService.sendMail({
+      to: data.email,
+      subject: "Verify your email",
+      html: otpTemplate(data.email, otp),
+    });
 
     if (existingUser) {
       const query: UpdateQuery<IUser> = {
@@ -84,9 +91,16 @@ export class AuthService {
 
     if (user.isOtpVerified) throw new ConflictError("User already verified");
 
-    //TODO: Implement nodeMailer to send OTP
+    const { otp, otpExpiresAt } = this._generateOtpData();
+
+    await emailService.sendMail({
+      to: email,
+      subject: "Verify your email",
+      html: otpTemplate(email, otp, true),
+    });
+
     const query: UpdateQuery<IUser> = {
-      $set: this._generateOtpData(),
+      $set: { otp, otpExpiresAt },
     };
 
     await this.userRepo.update(String(user._id), query);

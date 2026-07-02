@@ -1,5 +1,5 @@
-import { z } from "zod";
 import "dotenv/config";
+import { z } from "zod";
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -16,6 +16,11 @@ const envSchema = z.object({
   INSTAGRAM_APP_ID: z.string(),
   INSTAGRAM_APP_SECRET: z.string(),
   INSTAGRAM_REDIRECT_URI: z.url(),
+  SMTP_HOST: z.string(),
+  SMTP_PORT: z.coerce.number(),
+  SMTP_USER: z.email(),
+  SMTP_PASS: z.string(),
+  SMTP_FROM: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -1,11 +1,13 @@
 import { Types, UpdateQuery } from "mongoose";
+import { emailService } from "../../../shared/services/email.services.js";
+import { profileCompletedTemplate } from "../../../shared/templates/profile-completed.template.js";
 import {
   ConflictError,
   NotFoundError,
 } from "../../../shared/utils/appError.js";
 import { deleteFile } from "../../../shared/utils/fileHelper.js";
 import { removeUndefinedFields } from "../../../shared/utils/removeUndefinedFields.js";
-import { IUser } from "../../user/user.model.js";
+import { IUser, UserRole } from "../../user/user.model.js";
 import { UserRepository } from "../../user/user.repository.js";
 import {
   CreateBrandProfileDto,
@@ -35,6 +37,12 @@ export class BrandProfileService {
     const brandProfile = await this.brandProfileRepo.create({
       user: new Types.ObjectId(userId),
       ...data,
+    });
+
+    await emailService.sendMail({
+      to: user.email,
+      subject: "Your Brand Profile is Ready!",
+      html: profileCompletedTemplate(brandProfile.companyName, UserRole.Brand),
     });
 
     const query: UpdateQuery<IUser> = {

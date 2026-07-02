@@ -1,4 +1,6 @@
 import { Types, UpdateQuery } from "mongoose";
+import { emailService } from "../../../shared/services/email.services.js";
+import { profileCompletedTemplate } from "../../../shared/templates/profile-completed.template.js";
 import {
   BadRequestError,
   ConflictError,
@@ -6,7 +8,7 @@ import {
 } from "../../../shared/utils/appError.js";
 import { removeUndefinedFields } from "../../../shared/utils/removeUndefinedFields.js";
 import { InstagramService } from "../../instagram/instagram.service.js";
-import { IUser } from "../../user/user.model.js";
+import { IUser, UserRole } from "../../user/user.model.js";
 import { UserRepository } from "../../user/user.repository.js";
 import {
   CreateInfluencerProfileDto,
@@ -44,6 +46,15 @@ export class InfluencerProfileService {
 
     const influencerProfile =
       await this.influencerProfileRepo.create(profileData);
+
+    await emailService.sendMail({
+      to: user.email,
+      subject: "Your Influencer Profile is Ready!",
+      html: profileCompletedTemplate(
+        `${influencerProfile.firstName} ${influencerProfile.lastName}`,
+        UserRole.Influencer,
+      ),
+    });
 
     const query: UpdateQuery<IUser> = {
       $set: { isProfileComplete: true },
