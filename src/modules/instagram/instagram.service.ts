@@ -262,10 +262,14 @@ export class InstagramService {
 
     const containerData = await response.json();
 
+    logger.info("test 4");
+
     if (!response.ok)
       throw new BadRequestError(
         containerData.error?.message ?? "Failed to create media container",
       );
+
+    logger.info("test 5");
 
     if (!containerData.id)
       throw new BadRequestError("Failed to get media container id");
