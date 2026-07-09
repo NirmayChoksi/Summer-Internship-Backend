@@ -28,6 +28,7 @@ import {
 import { CampaignRepository } from "./campaign.repository.js";
 import { CampaignAIService } from "./campaign.ai.service.js";
 import { InstagramService } from "../instagram/instagram.service.js";
+import { logger } from "../../shared/utils/logger.js";
 
 export class CampaignService {
   private brandProfileRepo = new BrandProfileRepository();
@@ -462,6 +463,7 @@ export class CampaignService {
     userId: string,
     data: SubmitCampaignPostDto,
   ) => {
+    logger.info("test 3");
     const { campaign, influencer, application } =
       await this._getAcceptedInfluencerInCampaign(campaignId, userId);
 
