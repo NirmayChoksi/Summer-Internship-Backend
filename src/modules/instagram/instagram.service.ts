@@ -240,6 +240,8 @@ export class InstagramService {
       videoUrl?: string;
     },
   ) => {
+    logger.info(`${data.imageUrl} ${data.videoUrl}`);
+
     const params = new URLSearchParams({
       access_token: accessToken,
       caption: data.caption,
