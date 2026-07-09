@@ -22,6 +22,14 @@ export class BrandProfileRepository {
     }).lean({ virtuals: true });
   };
 
+  getHomeSummary = async (userId: Types.ObjectId) => {
+    return await BrandProfile.findOne({
+      user: userId,
+    })
+      .select("companyName companyLogo firstName lastName industry website")
+      .lean({ virtuals: true });
+  };
+
   update = async (id: string, query: UpdateQuery<IBrandProfile>) => {
     return await BrandProfile.findByIdAndUpdate(id, query, {
       returnDocument: "after",

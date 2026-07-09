@@ -79,6 +79,16 @@ export class BrandProfileService {
     };
   };
 
+  getProfileSummary = async (userId: string) => {
+    const profile = await this.brandProfileRepo.getHomeSummary(
+      new Types.ObjectId(userId),
+    );
+
+    if (!profile) throw new NotFoundError("Brand profile not found");
+
+    return profile;
+  };
+
   updateBrandProfile = async (
     profileId: string,
     data: UpdateBrandProfileDto,

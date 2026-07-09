@@ -1,11 +1,5 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
-
-export enum Niche {
-  Technology = "TECHNOLOGY",
-  Fashion = "FASHION",
-  Food = "FOOD",
-  Finance = "FINANCE",
-}
+import { Category } from "../../../shared/types/enums.js";
 
 export interface PlatformStats {
   username: string;
@@ -17,7 +11,7 @@ export interface PlatformStats {
 export interface IInfluencerProfile extends Document {
   user: Types.ObjectId;
   bio: string;
-  niche: Niche[];
+  niche: Category[];
   country: string;
   instagram: PlatformStats;
   twitter?: PlatformStats;
@@ -75,7 +69,7 @@ const influencerProfileSchema = new Schema<IInfluencerProfile>(
 
     niche: {
       type: [String],
-      enum: Object.values(Niche),
+      enum: Object.values(Category),
       required: true,
     },
 

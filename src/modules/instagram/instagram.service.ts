@@ -113,6 +113,83 @@ export class InstagramService {
     };
   };
 
+  getProfileInsights = async (token: string, options?: { limit?: number }) => {
+    const { media } = await this.getMedia(token, {
+      limit: options?.limit ?? 25,
+    });
+
+    if (!media.length) {
+      return {
+        totalPosts: 0,
+        totalReach: 0,
+        totalImpressions: 0,
+        totalEngagement: 0,
+        averageReach: 0,
+        averageImpressions: 0,
+        averageEngagement: 0,
+        media: [],
+      };
+    }
+
+    const insights = await Promise.all(
+      media.map(async (item: { id: string }) => {
+        const params = new URLSearchParams({
+          metric: "engagement,impressions,reach",
+          access_token: token,
+        });
+
+        const response = await fetch(
+          `https://graph.instagram.com/v24.0/${item.id}/insights?${params}`,
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new BadRequestError(
+            data.error?.message ?? "Failed to fetch media insights",
+          );
+        }
+
+        const metrics = Object.fromEntries(
+          data.data.map((metric: any) => [
+            metric.name,
+            metric.values?.[0]?.value ?? 0,
+          ]),
+        );
+
+        return {
+          mediaId: item.id,
+          engagement: metrics.engagement ?? 0,
+          impressions: metrics.impressions ?? 0,
+          reach: metrics.reach ?? 0,
+        };
+      }),
+    );
+
+    const totalEngagement = insights.reduce(
+      (sum, media) => sum + media.engagement,
+      0,
+    );
+
+    const totalReach = insights.reduce((sum, media) => sum + media.reach, 0);
+
+    const totalImpressions = insights.reduce(
+      (sum, media) => sum + media.impressions,
+      0,
+    );
+
+    return {
+      totalPosts: insights.length,
+      totalReach,
+      totalImpressions,
+      totalEngagement,
+      averageReach: Math.round(totalReach / insights.length),
+      averageImpressions: Math.round(totalImpressions / insights.length),
+      averageEngagement: Math.round(totalEngagement / insights.length),
+      media: insights,
+    };
+  };
+
   publishMedia = async (
     accessToken: string,
     instagramUserId: string,

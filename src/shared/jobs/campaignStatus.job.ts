@@ -3,7 +3,7 @@ import { CampaignService } from "../../modules/campaign/campaign.service.js";
 import { logger } from "../utils/logger.js";
 
 const campaignService = new CampaignService();
-let isJobRunning = false; // State lock variable
+let isJobRunning = false;
 
 export const startCampaignStatusJob = (): ScheduledTask => {
   return cron.schedule("*/5 * * * *", async () => {

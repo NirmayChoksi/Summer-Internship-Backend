@@ -8,6 +8,7 @@ import {
 } from "../../shared/utils/appError.js";
 import { removeUndefinedFields } from "../../shared/utils/removeUndefinedFields.js";
 import { BrandProfileRepository } from "../brand/profile/brandProfile.repository.js";
+import { IInfluencerProfile } from "../influencer/profile/influencerProfile.model.js";
 import { InfluencerProfileRepository } from "../influencer/profile/influencerProfile.repository.js";
 import { IUser, UserRole } from "../user/user.model.js";
 import {
@@ -21,6 +22,7 @@ import {
   CampaignStatus,
   ICampaign,
   InfluencerCampaignStatus,
+  Platform,
 } from "./campaign.model.js";
 import { CampaignRepository } from "./campaign.repository.js";
 
@@ -96,6 +98,83 @@ export class CampaignService {
     );
 
     return { message: "Campaigns fetched successfully", campaigns };
+  };
+
+  getMyApplications = async (userId: string) => {
+    const influencer = await this._getInfluencerProfileByUserId(userId);
+
+    const campaigns = await this.campaignRepo.getApplicationsByInfluencer(
+      influencer._id,
+      5,
+    );
+
+    return campaigns.map((campaign) => {
+      const application = this._findCampaignInfluencer(
+        campaign,
+        influencer._id,
+      );
+
+      return this._toInfluencerCampaign(campaign, application!);
+    });
+  };
+
+  getRecommendedCampaigns = async (userId: string) => {
+    const influencer = await this._getInfluencerProfileByUserId(userId);
+
+    const campaigns = await this.campaignRepo.getOpenCampaigns(
+      influencer._id,
+      30,
+    );
+
+    const recommendedCampaigns = campaigns
+      .map((campaign) => ({
+        ...campaign,
+        score: this._calculateRecommendationScore(campaign, influencer),
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map(({ score, ...campaign }) => campaign);
+
+    return recommendedCampaigns;
+  };
+
+  getOverview = async (userId: string) => {
+    const brand = await this.brandProfileRepo.findByUserId(
+      new Types.ObjectId(userId),
+    );
+
+    if (!brand) throw new NotFoundError("Brand profile not found");
+
+    return await this.campaignRepo.getOverview(brand._id);
+  };
+
+  getActiveCampaigns = async (userId: string) => {
+    const brand = await this.brandProfileRepo.findByUserId(
+      new Types.ObjectId(userId),
+    );
+
+    if (!brand) throw new NotFoundError("Brand profile not found");
+
+    return await this.campaignRepo.getActiveCampaigns(brand._id);
+  };
+
+  getRecentApplications = async (userId: string) => {
+    const brand = await this.brandProfileRepo.findByUserId(
+      new Types.ObjectId(userId),
+    );
+
+    if (!brand) throw new NotFoundError("Brand profile not found");
+
+    const campaigns = await this.campaignRepo.getRecentApplications(brand._id);
+
+    return campaigns.flatMap((campaign) =>
+      campaign.influencers.map((influencer) => ({
+        campaignId: campaign._id,
+        campaignTitle: campaign.title,
+        status: influencer.status,
+        influencer: influencer.profile,
+      })),
+    );
   };
 
   joinCampaign = async (campaignId: string, userId: string) => {
@@ -291,7 +370,6 @@ export class CampaignService {
 
   updateCampaignStatuses = async () => {
     const now = new Date();
-    console.log(now);
 
     await this.campaignRepo.updateMany(
       {
@@ -354,6 +432,39 @@ export class CampaignService {
       throw new ForbiddenError("Brand does not own this campaign");
   };
 
+  private _calculateRecommendationScore = (
+    campaign: Awaited<
+      ReturnType<CampaignRepository["getOpenCampaigns"]>
+    >[number],
+    influencer: IInfluencerProfile,
+  ) => {
+    let score = 0;
+
+    if (influencer.niche.includes(campaign.industry)) {
+      score += 50;
+    }
+
+    if (campaign.platforms.includes(Platform.Instagram)) {
+      score += 20;
+    }
+
+    if (campaign.payout >= 10000) {
+      score += 20;
+    } else if (campaign.payout >= 5000) {
+      score += 10;
+    }
+
+    const ageInDays =
+      (Date.now() - new Date(campaign.createdAt).getTime()) /
+      (1000 * 60 * 60 * 24);
+
+    if (ageInDays <= 7) {
+      score += 10;
+    }
+
+    return score;
+  };
+
   private _findCampaignInfluencer = (
     campaign: ICampaign,
     influencerId: Types.ObjectId,
@@ -411,15 +522,15 @@ export class CampaignService {
     return influencer;
   };
 
-  private _toInfluencerCampaign(
+  private _toInfluencerCampaign = (
     campaign: ICampaign,
     myApplication: CampaignInfluencer | null,
-  ) {
+  ) => {
     const { influencers, ...campaignData } = campaign.toObject();
 
     return {
       ...campaignData,
       myApplication,
     };
-  }
+  };
 }

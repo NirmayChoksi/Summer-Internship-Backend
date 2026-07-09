@@ -1,5 +1,5 @@
 import z from "zod";
-import { Industry } from "./brandProfile.model.js";
+import { Category } from "../../../shared/types/enums.js";
 
 const baseBrandProfileSchema = z.object({
   companyLogo: z.string(),
@@ -7,7 +7,7 @@ const baseBrandProfileSchema = z.object({
   description: z.string().min(20),
   website: z.url(),
   industry: z
-    .array(z.enum(Industry))
+    .array(z.enum(Category))
     .min(1, "At least one industry is required"),
   budget: z
     .object({

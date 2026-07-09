@@ -48,13 +48,13 @@ export const InfluencerProfileController = {
     }
   },
 
-  refreshInstagramFollowers: async (
+  syncInstagramFollowers: async (
     req: Request,
     res: Response,
     next: NextFunction,
   ) => {
     try {
-      const result = await influencerProfileService.refreshInstagramFollowers(
+      const result = await influencerProfileService.syncInstagramFollowers(
         req.user!.id,
       );
 

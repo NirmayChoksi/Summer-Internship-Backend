@@ -2,13 +2,7 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 import mongooseLeanVirtuals from "mongoose-lean-virtuals";
 import { env } from "../../../config/env.js";
 import { MODELS } from "../../../shared/types/constants.js";
-
-export enum Industry {
-  Technology = "TECHNOLOGY",
-  Fashion = "FASHION",
-  Food = "FOOD",
-  Finance = "FINANCE",
-}
+import { Category } from "../../../shared/types/enums.js";
 
 export interface Budget {
   min: number;
@@ -21,7 +15,7 @@ export interface IBrandProfile extends Document {
   companyName: string;
   description: string;
   website: string;
-  industry: Industry[];
+  industry: Category[];
   budget: Budget;
   firstName: string;
   lastName: string;
@@ -81,7 +75,7 @@ const brandProfileSchema = new Schema<IBrandProfile>(
 
     industry: {
       type: [String],
-      enum: Object.values(Industry),
+      enum: Object.values(Category),
       required: true,
     },
 

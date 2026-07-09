@@ -24,8 +24,8 @@ InfluencerProfileRouter.get(
 );
 
 InfluencerProfileRouter.patch(
-  "/refresh-instagram-followers",
-  InfluencerProfileController.refreshInstagramFollowers,
+  "/sync-instagram-followers",
+  InfluencerProfileController.syncInstagramFollowers,
 );
 
 InfluencerProfileRouter.patch(

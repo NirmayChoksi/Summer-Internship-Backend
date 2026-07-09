@@ -90,7 +90,38 @@ export class InfluencerProfileService {
     };
   };
 
-  async refreshInstagramFollowers(userId: string) {
+  getProfileSummary = async (userId: string) => {
+    const profile = await this.influencerProfileRepo.getHomeSummary(
+      new Types.ObjectId(userId),
+    );
+
+    if (!profile) throw new NotFoundError("Influencer profile not found");
+
+    return {
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      verified: profile.isVerified,
+      niche: profile.niche,
+    };
+  };
+
+  getProfileInsights = async (userId: string) => {
+    const profile = await this.influencerProfileRepo.findByUserId(
+      new Types.ObjectId(userId),
+      "+instagram.token",
+    );
+
+    if (!profile) throw new NotFoundError("Influencer profile not found");
+
+    if (!profile.instagram.token)
+      throw new BadRequestError("Instagram account not connected");
+
+    return await this.instagramService.getProfileInsights(
+      profile.instagram.token,
+    );
+  };
+
+  syncInstagramFollowers = async (userId: string) => {
     const profile = await this.influencerProfileRepo.findByUserId(
       new Types.ObjectId(userId),
       "+instagram.token",
@@ -120,7 +151,7 @@ export class InfluencerProfileService {
     return {
       followers,
     };
-  }
+  };
 
   updateInfluencerProfile = async (
     profileId: string,

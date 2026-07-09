@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 import { MODELS } from "../../shared/types/constants.js";
-import { Industry } from "../brand/profile/brandProfile.model.js";
+import { Category } from "../../shared/types/enums.js";
 
 export enum CampaignStatus {
   Active = "ACTIVE",
@@ -23,12 +23,13 @@ export enum Platform {
 export interface CampaignInfluencer {
   profile: Types.ObjectId;
   status: InfluencerCampaignStatus;
+  post?: string;
 }
 
 export interface ICampaign extends Document {
   brand: Types.ObjectId;
   title: string;
-  industry: Industry;
+  industry: Category;
   description: string;
   platforms: Platform[];
   payout: number;
@@ -38,6 +39,7 @@ export interface ICampaign extends Document {
   acceptedInfluencersCount: number;
   status: CampaignStatus;
   influencers: CampaignInfluencer[];
+  createdAt: string;
 }
 
 const influencerCampaignSchema = new Schema<CampaignInfluencer>(
@@ -54,6 +56,10 @@ const influencerCampaignSchema = new Schema<CampaignInfluencer>(
       enum: Object.values(InfluencerCampaignStatus),
       default: InfluencerCampaignStatus.Pending,
     },
+
+    post: {
+      type: String,
+    },
   },
   { _id: false },
 );
@@ -69,7 +75,7 @@ const campaignSchema = new Schema<ICampaign>(
 
     industry: {
       type: String,
-      enum: Object.values(Industry),
+      enum: Object.values(Category),
       required: true,
     },
 
@@ -126,6 +132,11 @@ const campaignSchema = new Schema<ICampaign>(
   },
   { timestamps: true },
 );
+
+campaignSchema.index({
+  status: 1,
+  endDate: 1,
+});
 
 export const Campaign = mongoose.model<ICampaign>(
   MODELS.campaign,

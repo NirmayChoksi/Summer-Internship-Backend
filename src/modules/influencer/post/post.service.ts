@@ -84,8 +84,6 @@ export class PostService {
 
     if (!rawResponse) throw new InternalServerError("Failed to refine caption");
 
-    console.log("Refine response raw:", rawResponse);
-
     const result = JSON.parse(rawResponse.replace(/```json\s*|\s*```/g, ""));
 
     return result;

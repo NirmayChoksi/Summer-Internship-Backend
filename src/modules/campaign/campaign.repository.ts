@@ -3,6 +3,7 @@ import { Pagination } from "../../shared/types/interfaces.js";
 import { CampaignFilters } from "./campaign.dto.js";
 import {
   Campaign,
+  CampaignStatus,
   ICampaign,
   InfluencerCampaignStatus,
 } from "./campaign.model.js";
@@ -84,12 +85,143 @@ export class CampaignRepository {
 
   findByInfluencerId = async (influencerId: Types.ObjectId) => {
     return await Campaign.find({
-      "influencers.influencer": influencerId,
+      "influencers.profile": influencerId,
     }).populate(this.CAMPAIGN_POPULATE);
   };
 
+  getApplicationsByInfluencer = async (
+    influencerId: Types.ObjectId,
+    limit = 5,
+  ) => {
+    return Campaign.find({
+      "influencers.profile": influencerId,
+    })
+      .select("title payout endDate status influencers brand")
+      .populate({
+        path: "brand",
+        select: "companyName logo",
+      })
+      .sort({ updatedAt: -1 })
+      .limit(limit);
+  };
+
+  getOpenCampaigns = async (influencerId: Types.ObjectId, limit = 30) => {
+    return Campaign.find({
+      status: {
+        $ne: CampaignStatus.Completed,
+      },
+
+      endDate: {
+        $gt: new Date(),
+      },
+
+      "influencers.profile": {
+        $ne: influencerId,
+      },
+
+      $expr: {
+        $lt: ["$acceptedInfluencersCount", "$maximumInfluencers"],
+      },
+    })
+      .select(
+        "title description industry platforms payout endDate createdAt brand",
+      )
+      .populate({
+        path: "brand",
+        select: "companyName logo",
+      })
+      .sort({
+        createdAt: -1,
+      })
+      .limit(limit)
+      .lean();
+  };
+
+  getOverview = async (brandId: Types.ObjectId) => {
+    const [overview] = await Campaign.aggregate([
+      {
+        $match: {
+          brand: brandId,
+        },
+      },
+
+      {
+        $group: {
+          _id: null,
+
+          activeCampaigns: {
+            $sum: {
+              $cond: [{ $eq: ["$status", CampaignStatus.Active] }, 1, 0],
+            },
+          },
+
+          completedCampaigns: {
+            $sum: {
+              $cond: [{ $eq: ["$status", CampaignStatus.Completed] }, 1, 0],
+            },
+          },
+
+          totalApplications: {
+            $sum: {
+              $size: "$influencers",
+            },
+          },
+
+          acceptedApplications: {
+            $sum: "$acceptedInfluencersCount",
+          },
+        },
+      },
+    ]);
+
+    return (
+      overview ?? {
+        activeCampaigns: 0,
+        completedCampaigns: 0,
+        totalApplications: 0,
+        acceptedApplications: 0,
+      }
+    );
+  };
+
+  getActiveCampaigns = async (brandId: Types.ObjectId, limit = 5) => {
+    return Campaign.find({
+      brand: brandId,
+
+      status: CampaignStatus.Active,
+    })
+      .select(
+        "title payout endDate acceptedInfluencersCount maximumInfluencers",
+      )
+      .sort({
+        endDate: 1,
+      })
+      .limit(limit)
+      .lean();
+  };
+
+  getRecentApplications = async (brandId: Types.ObjectId, limit = 5) => {
+    return Campaign.find({
+      brand: brandId,
+      influencers: {
+        $exists: true,
+        $ne: [],
+      },
+    })
+      .select("title updatedAt influencers")
+      .populate({
+        path: "influencers.profile",
+        select: "firstName lastName instagram",
+      })
+      .sort({
+        updatedAt: -1,
+      })
+      .limit(limit)
+      .lean();
+  };
+
   update = async (id: string, query: UpdateQuery<ICampaign>) => {
-    return await Campaign.findByIdAndUpdate(id, query, {
+    return Campaign.findByIdAndUpdate(id, query, {
       returnDocument: "after",
     }).populate(this.CAMPAIGN_POPULATE);
   };
@@ -106,7 +238,7 @@ export class CampaignRepository {
     influencerId: Types.ObjectId,
   ) => {
     return await Campaign.findOneAndUpdate(
-      { _id: campaignId, "influencers.influencer": { $ne: influencerId } },
+      { _id: campaignId, "influencers.profile": { $ne: influencerId } },
       {
         $push: {
           influencers: { profile: influencerId },

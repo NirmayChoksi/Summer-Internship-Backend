@@ -18,10 +18,16 @@ class EmailService {
     html: string;
     text?: string;
   }) {
-    return await this.transporter.sendMail({
-      from: env.SMTP_FROM,
-      ...options,
-    });
+    try {
+      await this.transporter.verify();
+
+      await this.transporter.sendMail({
+        from: env.SMTP_FROM,
+        ...options,
+      });
+    } catch (error) {
+      console.error("Error while sending mail:", error);
+    }
   }
 }
 

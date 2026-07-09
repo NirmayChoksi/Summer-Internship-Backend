@@ -22,10 +22,12 @@ export class InfluencerProfileRepository {
     }).select(select ?? "");
   };
 
-  findByEmail = async (email: string) => {
-    return await InfluencerProfile.findOne({
-      email,
-    });
+  getHomeSummary = async (userId: Types.ObjectId) => {
+    return InfluencerProfile.findOne({
+      user: userId,
+    })
+      .select("firstName lastName niche isVerified")
+      .lean();
   };
 
   update = async (id: string, query: UpdateQuery<IInfluencerProfile>) => {

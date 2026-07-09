@@ -1,5 +1,5 @@
 import z from "zod";
-import { Niche } from "./influencerProfile.model.js";
+import { Category } from "../../../shared/types/enums.js";
 
 const platformStatsSchema = z.object({
   username: z.string().min(1),
@@ -13,7 +13,7 @@ const instagramCreateSchema = platformStatsSchema.extend({
 
 const baseInfluencerProfileSchema = z.object({
   bio: z.string().min(10),
-  niche: z.array(z.enum(Niche)),
+  niche: z.array(z.enum(Category)),
   country: z.string(),
   instagram: instagramCreateSchema,
   twitter: platformStatsSchema.optional(),

@@ -1,11 +1,11 @@
 import z from "zod";
+import { Category } from "../../shared/types/enums.js";
 import { objectIdSchema } from "../../shared/utils/validator.js";
-import { Industry } from "../brand/profile/brandProfile.model.js";
 import { InfluencerCampaignStatus, Platform } from "./campaign.model.js";
 
 export const createCampaignDto = z.object({
   title: z.string().min(5),
-  industry: z.enum(Industry),
+  industry: z.enum(Category),
   description: z.string().min(20),
   platforms: z
     .array(z.enum(Platform))
@@ -40,7 +40,7 @@ export const brandIdQuerySchema = z.object({ brandId: objectIdSchema });
 export type BrandIdQuery = z.infer<typeof brandIdQuerySchema>;
 
 export const campaignQuerySchema = z.object({
-  industry: z.enum(Industry).optional(),
+  industry: z.enum(Category).optional(),
   platform: z.string().optional(),
   minPayout: z.coerce.number().optional(),
   maxPayout: z.coerce.number().optional(),
