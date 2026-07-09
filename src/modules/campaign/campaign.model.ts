@@ -20,6 +20,12 @@ export enum Platform {
   Youtube = "YOUTUBE",
 }
 
+export interface CampaignPost {
+  mediaId: string;
+  caption: string;
+  submittedAt: Date;
+}
+
 export interface CampaignInfluencer {
   profile: Types.ObjectId;
   status: InfluencerCampaignStatus;
@@ -42,6 +48,28 @@ export interface ICampaign extends Document {
   createdAt: string;
 }
 
+const campaignPostSchema = new Schema<CampaignPost>(
+  {
+    mediaId: {
+      type: String,
+      required: true,
+    },
+
+    caption: {
+      type: String,
+      required: true,
+    },
+
+    submittedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
 const influencerCampaignSchema = new Schema<CampaignInfluencer>(
   {
     profile: {
@@ -57,9 +85,7 @@ const influencerCampaignSchema = new Schema<CampaignInfluencer>(
       default: InfluencerCampaignStatus.Pending,
     },
 
-    post: {
-      type: String,
-    },
+    post: campaignPostSchema,
   },
   { _id: false },
 );

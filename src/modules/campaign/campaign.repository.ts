@@ -3,6 +3,7 @@ import { Pagination } from "../../shared/types/interfaces.js";
 import { CampaignFilters } from "./campaign.dto.js";
 import {
   Campaign,
+  CampaignPost,
   CampaignStatus,
   ICampaign,
   InfluencerCampaignStatus,
@@ -276,6 +277,30 @@ export class CampaignRepository {
       },
       { $set: { "influencers.$.status": status }, ...query },
       { returnDocument: "after" },
+    ).populate(this.CAMPAIGN_POPULATE);
+  };
+
+  submitPost = async (
+    campaignId: Types.ObjectId,
+    influencerId: Types.ObjectId,
+    post: CampaignPost,
+  ) => {
+    return Campaign.findOneAndUpdate(
+      {
+        _id: campaignId,
+        "influencers.profile": influencerId,
+        "influencers.post": {
+          $exists: false,
+        },
+      },
+      {
+        $set: {
+          "influencers.$.post": post,
+        },
+      },
+      {
+        returnDocument: "after",
+      },
     ).populate(this.CAMPAIGN_POPULATE);
   };
 

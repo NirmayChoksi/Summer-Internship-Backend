@@ -9,6 +9,9 @@ import {
   CampaignFilters,
   ChangeInfluencerStatusDto,
   CreateCampaignDto,
+  GenerateCaptionDto,
+  RefineCaptionDto,
+  SubmitCampaignPostDto,
   UpdateCampaignDto,
 } from "./campaign.dto.js";
 import { CampaignService } from "./campaign.service.js";
@@ -174,6 +177,62 @@ export const CampaignController = {
       const result = await campaignService.deleteCampaign(
         req.params.campaignId,
         req.user!.id,
+      );
+
+      ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  generateCaption: async (
+    req: Request<CampaignIdParam, unknown, GenerateCaptionDto>,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const result = await campaignService.generateCampaignCaption(
+        req.params.campaignId,
+        req.user!.id,
+        req.body.userText,
+        req.file!,
+      );
+
+      ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  refineCaption: async (
+    req: Request<CampaignIdParam, unknown, RefineCaptionDto>,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const result = await campaignService.refineCampaignCaption(
+        req.params.campaignId,
+        req.user!.id,
+        req.body.caption,
+        req.body.instruction,
+      );
+
+      ApiResponse.success(res, result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  submitPost: async (
+    req: Request<CampaignIdParam, unknown, SubmitCampaignPostDto>,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const result = await campaignService.submitCampaignPost(
+        req.params.campaignId,
+        req.user!.id,
+        req.body,
       );
 
       ApiResponse.success(res, result);

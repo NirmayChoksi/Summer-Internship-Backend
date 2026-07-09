@@ -15,6 +15,7 @@ import {
   CampaignFilters,
   ChangeInfluencerStatusDto,
   CreateCampaignDto,
+  SubmitCampaignPostDto,
   UpdateCampaignDto,
 } from "./campaign.dto.js";
 import {
@@ -25,11 +26,16 @@ import {
   Platform,
 } from "./campaign.model.js";
 import { CampaignRepository } from "./campaign.repository.js";
+import { CampaignAIService } from "./campaign.ai.service.js";
+import { InstagramService } from "../instagram/instagram.service.js";
 
 export class CampaignService {
   private brandProfileRepo = new BrandProfileRepository();
   private campaignRepo = new CampaignRepository();
   private influencerProfileRepo = new InfluencerProfileRepository();
+
+  private aiService = new CampaignAIService();
+  private instagramService = new InstagramService();
 
   createCampaign = async (userId: string, data: CreateCampaignDto) => {
     const brandProfile = await this._getBrandProfileByUserId(userId);
@@ -419,6 +425,86 @@ export class CampaignService {
     return { message: "Campaign deleted successfully" };
   };
 
+  generateCampaignCaption = async (
+    campaignId: string,
+    userId: string,
+    userText: string | undefined,
+    file: Express.Multer.File,
+  ) => {
+    await this._getAcceptedInfluencerInCampaign(campaignId, userId);
+
+    const result = await this.aiService.generateCaption(userText, file);
+
+    return {
+      message: "Caption generated successfully",
+      ...result,
+    };
+  };
+
+  refineCampaignCaption = async (
+    campaignId: string,
+    userId: string,
+    caption: string,
+    instruction: string,
+  ) => {
+    await this._getAcceptedInfluencerInCampaign(campaignId, userId);
+
+    const result = await this.aiService.refineCaption(caption, instruction);
+
+    return {
+      message: "Caption refined successfully",
+      ...result,
+    };
+  };
+
+  submitCampaignPost = async (
+    campaignId: string,
+    userId: string,
+    data: SubmitCampaignPostDto,
+  ) => {
+    const { campaign, influencer, application } =
+      await this._getAcceptedInfluencerInCampaign(campaignId, userId);
+
+    if (application.post)
+      throw new ConflictError("Post already submitted for this campaign");
+
+    const profile = await this.influencerProfileRepo.findByUserId(
+      influencer.user as Types.ObjectId,
+      "+instagram.token +instagram.userId",
+    );
+
+    if (!profile) throw new NotFoundError("Influencer profile not found");
+
+    if (!profile.instagram.token || !profile.instagram.userId) {
+      throw new ConflictError("Instagram account not connected");
+    }
+
+    const media = await this.instagramService.publishMedia(
+      profile.instagram.token,
+      profile.instagram.userId,
+      {
+        caption: data.caption,
+        imageUrl: data.imageUrl,
+        videoUrl: data.videoUrl,
+      },
+    );
+
+    const updatedCampaign = await this.campaignRepo.submitPost(
+      campaign._id,
+      profile._id,
+      {
+        mediaId: media.id,
+        caption: data.caption,
+        submittedAt: new Date(),
+      },
+    );
+
+    return {
+      message: "Campaign post submitted successfully",
+      campaign: updatedCampaign,
+    };
+  };
+
   private _assertCampaignIsActive = (campaign: ICampaign) => {
     if (campaign.status !== CampaignStatus.Active)
       throw new ConflictError("Campaign is not active");
@@ -475,6 +561,31 @@ export class CampaignService {
     return campaign.influencers.find(
       ({ profile }) => String(isPopulated ? profile._id : profile) === id,
     );
+  };
+
+  private _getAcceptedInfluencerInCampaign = async (
+    campaignId: string,
+    userId: string,
+  ) => {
+    const campaign = await this._getCampaign(campaignId);
+
+    this._assertCampaignIsActive(campaign);
+
+    const influencer = await this._getInfluencerProfileByUserId(userId);
+
+    const application = this._findCampaignInfluencer(campaign, influencer._id);
+
+    if (!application)
+      throw new NotFoundError("You haven't joined this campaign");
+
+    if (application.status !== InfluencerCampaignStatus.Accepted)
+      throw new ForbiddenError("You haven't been accepted into this campaign");
+
+    return {
+      campaign,
+      influencer,
+      application,
+    };
   };
 
   private _getBrandProfileByUserId = async (userId: string) => {

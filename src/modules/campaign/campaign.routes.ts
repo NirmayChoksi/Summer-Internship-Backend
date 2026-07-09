@@ -5,6 +5,9 @@ import {
   campaignQuerySchema,
   changeInfluencerStatusDto,
   createCampaignDto,
+  generateCaptionDto,
+  refineCaptionDto,
+  submitCampaignPostDto,
   updateCampaignDto,
 } from "./campaign.dto.js";
 import {
@@ -14,6 +17,7 @@ import {
 } from "../../shared/utils/validator.js";
 import { authorizeRoles } from "../../shared/middlewares/rbac.middleware.js";
 import { UserRole } from "../user/user.model.js";
+import { uploadPost } from "../upload/upload.middleware.js";
 
 export const CampaignRouter = Router();
 
@@ -85,4 +89,26 @@ CampaignRouter.delete(
   authorizeRoles(UserRole.Brand),
   validate({ params: campaignIdParamSchema }),
   CampaignController.delete,
+);
+
+CampaignRouter.post(
+  "/:campaignId/post/caption",
+  authorizeRoles(UserRole.Influencer),
+  uploadPost,
+  validate({ params: campaignIdParamSchema, body: generateCaptionDto }),
+  CampaignController.generateCaption,
+);
+
+CampaignRouter.patch(
+  "/:campaignId/post/caption",
+  authorizeRoles(UserRole.Influencer),
+  validate({ params: campaignIdParamSchema, body: refineCaptionDto }),
+  CampaignController.refineCaption,
+);
+
+CampaignRouter.post(
+  "/:campaignId/post",
+  authorizeRoles(UserRole.Influencer),
+  validate({ params: campaignIdParamSchema, body: submitCampaignPostDto }),
+  CampaignController.submitPost,
 );
