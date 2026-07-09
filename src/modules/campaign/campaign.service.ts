@@ -29,6 +29,7 @@ import { CampaignRepository } from "./campaign.repository.js";
 import { CampaignAIService } from "./campaign.ai.service.js";
 import { InstagramService } from "../instagram/instagram.service.js";
 import { logger } from "../../shared/utils/logger.js";
+import { env } from "../../config/env.js";
 
 export class CampaignService {
   private brandProfileRepo = new BrandProfileRepository();
@@ -486,8 +487,12 @@ export class CampaignService {
       profile.instagram.userId,
       {
         caption: data.caption,
-        imageUrl: data.imageUrl,
-        videoUrl: data.videoUrl,
+        imageUrl: data.imageUrl
+          ? `${env.BASE_URL}/${data.imageUrl}`
+          : undefined,
+        videoUrl: data.videoUrl
+          ? `${env.BASE_URL}/${data.videoUrl}`
+          : undefined,
       },
     );
 
