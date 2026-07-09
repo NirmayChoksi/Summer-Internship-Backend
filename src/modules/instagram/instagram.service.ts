@@ -1,5 +1,6 @@
 import { env } from "../../config/env.js";
 import { BadRequestError } from "../../shared/utils/appError.js";
+import { logger } from "../../shared/utils/logger.js";
 
 export class InstagramService {
   exchange = async (code: string) => {
@@ -195,11 +196,15 @@ export class InstagramService {
     instagramUserId: string,
     data: { caption: string; imageUrl?: string; videoUrl?: string },
   ) => {
+    logger.info("test 1");
+
     const containerId = await this._createMediaContainer(
       accessToken,
       instagramUserId,
       data,
     );
+
+    logger.info("test");
 
     await this._waitForContainerReady(containerId, accessToken);
 
