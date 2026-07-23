@@ -8,7 +8,7 @@ export class UploadService {
       url: `uploads/companyLogos/${file.filename}`,
     };
   };
-  
+
   uploadPost = async (file?: Express.Multer.File) => {
     if (!file) throw new BadRequestError("Company logo not uploaded");
 

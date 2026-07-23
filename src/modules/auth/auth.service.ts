@@ -131,7 +131,7 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedError("Invalid email or password");
 
-    this._assertUserCanLogin(user, data.role);
+    this._assertUserCanLogin(user);
 
     const isPasswordValid = await this._verifyPassword(
       data.password,
@@ -164,12 +164,10 @@ export class AuthService {
       throw new UnauthorizedError("Invalid OTP");
   };
 
-  private _assertUserCanLogin = (user: IUser, role: UserRole) => {
+  private _assertUserCanLogin = (user: IUser) => {
     if (!user.isOtpVerified) throw new ForbiddenError("Email not verified");
 
     if (!user.password) throw new ForbiddenError("Password not created");
-
-    if (user.role !== role) throw new UnauthorizedError("Invalid role");
   };
 
   private _buildAuthResponse = (user: IUser, message: string) => {
